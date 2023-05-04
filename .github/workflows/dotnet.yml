@@ -16,6 +16,8 @@ jobs:
         export DOTNET=net7.0
         export OUT=/var/www/simple-web-app-mvc-dotnet
         export TARGET=linux-x64
+        
+        cd $/OUT/SimpleWebAppMVC
 
         dotnet clean
         dotnet build -c ${ENV} -r ${TARGET} --no-self-contained
