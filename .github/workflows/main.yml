@@ -1,0 +1,27 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: dotnet-runner
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build and Deploy
+      run: |
+        export ENV=Release
+        export DOTNET=net7.0
+        export OUT=/var/www/simple-web-app-mvc-dotnet
+        export TARGET=linux-x64
+
+        dotnet clean
+        dotnet build -c ${ENV} -r ${TARGET} --no-self-contained
+        dotnet publish -c ${ENV} -r ${TARGET} --no-self-contained
+        
+        sudo rm -rf ${OUT}/*
+        ssh upload@10.10.73.230 "if [ ! -d "%OUT" ]; then mkdir "$OUT"; fi"
+        rsync -avz bin/${ENV}/${DOTNET}/${TARGET}/publish/* upload@10.10.73.230:${OUT}/ 
+        ssh upload@10.10.73.230 "dotnet /var/www/simple-web-app-mvc-dotnet/SimpleWebAppMVC.dll --urls=http://0.0.0.0:5000/
